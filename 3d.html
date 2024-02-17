@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mutualisms idea1</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://rawcdn.githack.com/mrdoob/three.js/r128/examples/js/loaders/OBJLoader.js"></script> <!-- Include OBJLoader -->
+  <script>
+    // Set up scene
+    const scene = new THREE.Scene();
+
+    // Set up camera
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 3; // Adjusted camera position
+
+    camera.position.y = 1; // Adjusted camera position
+
+    // Set up renderer
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
+    scene.add(ambientLight);
+
+    // Add directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(1, 1, 1).normalize();
+    scene.add(directionalLight);
+
+    // Load OBJ file
+    const loader = new THREE.OBJLoader();
+    loader.load(
+      'http://127.0.0.1:8080/board.obj',
+      function (object) {
+			const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+
+        // Create flat material for surface areas
+        const flatMaterial = new THREE.MeshNormalMaterial();
+
+        // Apply materials based on geometry's edges
+        object.traverse(function (child) {
+          if (child instanceof THREE.Mesh) {
+            // Calculate geometry's edges
+            const edges = new THREE.EdgesGeometry(child.geometry);
+            const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
+            scene.add(edgeLines);
+
+            // Apply flat material to the mesh
+            child.material = flatMaterial;
+          }
+        });
+        scene.add(object);
+      },
+      function (xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+      },
+      function (error) {
+        console.error('Error loading OBJ file:', error);
+      }
+    );
+
+    // Set up render loop
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
+
