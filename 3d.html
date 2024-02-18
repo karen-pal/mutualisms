@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,6 +16,9 @@
 </head>
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="OrbitControls.js"></script> <!-- Include OrbitControls -->
+
+
   <script src="https://rawcdn.githack.com/mrdoob/three.js/r128/examples/js/loaders/OBJLoader.js"></script> <!-- Include OBJLoader -->
   <script>
     // Set up scene
@@ -25,7 +27,6 @@
     // Set up camera
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 3; // Adjusted camera position
-
     camera.position.y = 1; // Adjusted camera position
 
     // Set up renderer
@@ -45,9 +46,9 @@
     // Load OBJ file
     const loader = new THREE.OBJLoader();
     loader.load(
-      'board.obj',
+      'http://127.0.0.1:8080/board.obj',
       function (object) {
-			const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
 
         // Create flat material for surface areas
         const flatMaterial = new THREE.MeshNormalMaterial();
@@ -74,9 +75,13 @@
       }
     );
 
+    // Add OrbitControls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
     // Set up render loop
     function animate() {
       requestAnimationFrame(animate);
+      controls.update(); // Update controls
       renderer.render(scene, camera);
     }
     animate();
