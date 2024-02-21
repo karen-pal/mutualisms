@@ -21,7 +21,7 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
     var pickedMesh = null;
 
     // Load .obj file using objFileLoader
-    BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", "board.obj", scene, function (meshes) {
+    BABYLON.SceneLoader.ImportMesh("", "./", "board.obj", scene, function (meshes) {
         // Material for edges
         var edgeMaterial = new BABYLON.StandardMaterial("edgeMaterial", scene);
         edgeMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color
@@ -86,7 +86,7 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
 		    var worldPosition = pickInfo.pickedPoint;
 
                 // Load the yuyo2.obj file and position it at the picked mesh's position
-                BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", "yuyo2.obj", scene, 
+                BABYLON.SceneLoader.ImportMesh("", "./", "yuyo2.obj", scene, 
                     function (importedMeshes) {
              importedMeshes.forEach(function (importedMesh) {
                         // Position the imported mesh at the picked mesh's position
