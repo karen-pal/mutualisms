@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
     // Load .obj file for motherboard
-    BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", "board.obj", scene, function (meshes) {
+    BABYLON.SceneLoader.ImportMesh("", "./", "board.obj", scene, function (meshes) {
         // Material for edges
         var edgeMaterial = new BABYLON.StandardMaterial("edgeMaterial", scene);
         edgeMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color
