@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -16,9 +17,10 @@
 </head>
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="OrbitControls.js"></script> <!-- Include OrbitControls -->
-
-
+  <script src="OrbitControls.js"></script> <!-- Include OrbitControls -->
+  <script src="https://rawcdn.githack.com/mrdoob/three.js/r128/examples/js/libs/fflate.min.js"></script> <!-- Include fflate.min.js -->
+  <script src="https://rawcdn.githack.com/mrdoob/three.js/r128/examples/js/loaders/FBXLoader.js"></script> <!-- Include FBXLoader -->
+  <script src="https://rawcdn.githack.com/mrdoob/three.js/r128/examples/js/loaders/MTLLoader.js"></script> <!-- Include MTLLoader -->
   <script src="https://rawcdn.githack.com/mrdoob/three.js/r128/examples/js/loaders/OBJLoader.js"></script> <!-- Include OBJLoader -->
   <script>
     // Set up scene
@@ -43,29 +45,56 @@
     directionalLight.position.set(1, 1, 1).normalize();
     scene.add(directionalLight);
 
-    // Load OBJ file
+    let motherboardModel = null;
+    let plantModel = null;
+
+    // Load OBJ file for motherboard
     const loader = new THREE.OBJLoader();
     loader.load(
       'board.obj',
       function (object) {
         const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-
-        // Create flat material for surface areas
         const flatMaterial = new THREE.MeshNormalMaterial();
 
-        // Apply materials based on geometry's edges
         object.traverse(function (child) {
           if (child instanceof THREE.Mesh) {
-            // Calculate geometry's edges
             const edges = new THREE.EdgesGeometry(child.geometry);
             const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
             scene.add(edgeLines);
-
-            // Apply flat material to the mesh
             child.material = flatMaterial;
           }
         });
+
+        motherboardModel = object;
         scene.add(object);
+      },
+      function (xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+      },
+      function (error) {
+        console.error('Error loading OBJ file:', error);
+      }
+    );
+
+    // Load OBJ file for plant
+    const plantLoader = new THREE.OBJLoader();
+    plantLoader.load(
+      'yuyo2.obj',
+      function (object) {
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+        const flatMaterial = new THREE.MeshNormalMaterial();
+
+        object.traverse(function (child) {
+          if (child instanceof THREE.Mesh) {
+            const edges = new THREE.EdgesGeometry(child.geometry);
+            const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
+            scene.add(edgeLines);
+            child.material = flatMaterial;
+            child.visible = false; // Initially hide the plant
+          }
+        });
+
+        plantModel = object;
       },
       function (xhr) {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -85,7 +114,43 @@
       renderer.render(scene, camera);
     }
     animate();
+
+    // Event listener for mouse click
+    window.addEventListener('click', onClick, false);
+
+    // Function to handle mouse click event
+    function onClick(event) {
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      
+      // Create a bounding box around the motherboard model
+      const boundingBox = new THREE.Box3().setFromObject(motherboardModel);
+	//console.log(raycaster.ray.intersectBox(boundingBox, new THREE.Vector3()))      
+      if (raycaster.ray.intersectBox(boundingBox, new THREE.Vector3())) {
+        const intersectPoint = raycaster.ray.intersectBox(boundingBox, new THREE.Vector3());
+        addPlant(intersectPoint);
+			        renderer.render(scene, camera); // Render scene after adding plant
+
+      }
+    }
+
+    // Function to add the plant model
+    function addPlant(position) {
+		      console.log(position);
+		      console.log(plantModel);
+    	if (plantModel) {
+        	const clonedPlant = plantModel.clone();
+        	clonedPlant.position.copy(position);
+		console.log(clonedPlant)
+        	scene.add(clonedPlant);
+      }
+    }
   </script>
 </body>
 </html>
-
+ 
