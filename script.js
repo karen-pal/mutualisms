@@ -1,5 +1,5 @@
 window.addEventListener('DOMContentLoaded', () => {
-	var audio = new Audio("http://127.0.0.1:8080/unspoken_verbs_1.m4a");
+	var audio = new Audio("./unspoken_verbs_1.m4a");
     // Get the canvas element
     var canvas = document.getElementById("renderCanvas");
 
@@ -22,7 +22,7 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
     var pickedMesh = null;
 
     // Load .obj file using objFileLoader
-    BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", "board.obj", scene, function (meshes) {
+    BABYLON.SceneLoader.ImportMesh("", "./", "board.obj", scene, function (meshes) {
         // Material for edges
         var edgeMaterial = new BABYLON.StandardMaterial("edgeMaterial", scene);
         edgeMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color
@@ -142,7 +142,7 @@ var animateLightPoints = function (lightPoints, interval) {
 		    var selectedObjFile = objFiles[randomIndex];
 
                 // Load the yuyo2.obj file and position it at the picked mesh's position
-                BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", selectedObjFile, scene, 
+                BABYLON.SceneLoader.ImportMesh("", "./", selectedObjFile, scene, 
                     function (importedMeshes) {
              importedMeshes.forEach(function (importedMesh) {
                         // Position the imported mesh at the picked mesh's position
