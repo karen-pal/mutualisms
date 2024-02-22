@@ -1,4 +1,5 @@
 window.addEventListener('DOMContentLoaded', () => {
+	var audio = new Audio("http://127.0.0.1:8080/unspoken_verbs_1.m4a");
     // Get the canvas element
     var canvas = document.getElementById("renderCanvas");
 
@@ -21,7 +22,7 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
     var pickedMesh = null;
 
     // Load .obj file using objFileLoader
-    BABYLON.SceneLoader.ImportMesh("", "./", "board.obj", scene, function (meshes) {
+    BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", "board.obj", scene, function (meshes) {
         // Material for edges
         var edgeMaterial = new BABYLON.StandardMaterial("edgeMaterial", scene);
         edgeMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color
@@ -55,6 +56,52 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
             // Enable pickability of the mesh
             mesh.isPickable = true;
         });
+
+
+// Create glow layer
+var glowLayer = new BABYLON.GlowLayer("glow", scene);
+
+// Create light points as light sources
+var lightPoints = [];
+for (var i = 0; i < 10; i++) {
+    var lightPoint = new BABYLON.PointLight("lightPoint" + i, new BABYLON.Vector3(0, 0, 0), scene);
+    lightPoint.diffuse = new BABYLON.Color3(1, 1, 0); // Yellow light
+    lightPoint.specular = new BABYLON.Color3(1, 1, 1); // White specular highlight
+    lightPoints.push(lightPoint);
+}
+
+// Position light points
+for (var i = 0; i < lightPoints.length; i++) {
+    lightPoints[i].position = new BABYLON.Vector3(Math.random() * 10 - 5, Math.random() * 3, Math.random() * 10 - 5);
+    
+    // Add light point to glow layer
+    glowLayer.addIncludedOnlyMesh(lightPoints[i]);
+}
+
+// Create light point indicators
+var lightPointIndicators = [];
+for (var i = 0; i < lightPoints.length; i++) {
+    var lightPointIndicator = BABYLON.MeshBuilder.CreateSphere("lightPointIndicator" + i, { diameter: 0.2, segments: 16 }, scene);
+    lightPointIndicator.position = lightPoints[i].position;
+    lightPointIndicator.material = new BABYLON.StandardMaterial("lightPointIndicatorMat", scene);
+    lightPointIndicator.material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow
+    lightPointIndicator.material.specularColor = new BABYLON.Color3(0, 0, 0); // No specular highlight
+    lightPointIndicator.material.emissiveColor = new BABYLON.Color3(1, 1, 0); // Yellow emission
+    lightPointIndicator.material.alpha = 0.1; // Adjust transparency
+    lightPointIndicators.push(lightPointIndicator);
+}
+// Animation function to toggle light points visibility
+var animateLightPoints = function (lightPoints, interval) {
+    var isVisible = true;
+    setInterval(function () {
+        lightPoints.forEach(function (point) {
+            point.intensity = isVisible ? 1 : 0; // Turn light on or off
+        });
+        isVisible = !isVisible;
+    }, interval);
+};
+
+
     });
 
     // Register a render loop to repeatedly render the scene
@@ -95,7 +142,7 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
 		    var selectedObjFile = objFiles[randomIndex];
 
                 // Load the yuyo2.obj file and position it at the picked mesh's position
-                BABYLON.SceneLoader.ImportMesh("", "./", selectedObjFile, scene, 
+                BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", selectedObjFile, scene, 
                     function (importedMeshes) {
              importedMeshes.forEach(function (importedMesh) {
                         // Position the imported mesh at the picked mesh's position
@@ -144,6 +191,24 @@ BABYLON.Animation.CreateAndStartAnimation("scaleAnim", importedMesh, "scaling", 
                         console.error("Failed to load yuyo2.obj:", message);
                     }
                 );
+		    // Start playing audio
+                audio.play();
+		    // Hide text after audio finishes
+		                // Create text
+                var textTexture = new BABYLON.DynamicTexture("TextTexture", { width: 512, height: 256 }, scene);
+                var textMaterial = new BABYLON.StandardMaterial("TextMaterial", scene);
+                textMaterial.diffuseTexture = textTexture;
+                textMaterial.diffuseTexture.hasAlpha = true; // Enable alpha channel
+                var textPlane = BABYLON.MeshBuilder.CreatePlane("TextPlane", { size: 2 }, scene);
+		var altitudes = [1.5,1,.8,2,1.8,.9]
+		var randomIndexA = Math.floor(Math.random() * objFiles.length);
+		var altitud = altitudes[randomIndexA];
+                textPlane.position = worldPosition.add(new BABYLON.Vector3(0, altitud, 0)); // Offset to make text appear above the clicked position
+        	textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+                textPlane.material = textMaterial;
+		textTexture.drawText("In the small beauty of the forest", null, null, "bold 36px Roboto", "white", "transparent", true);
+
             }
         }
     });
