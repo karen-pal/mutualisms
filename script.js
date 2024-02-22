@@ -21,7 +21,7 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
     var pickedMesh = null;
 
     // Load .obj file using objFileLoader
-    BABYLON.SceneLoader.ImportMesh("", "./", "board.obj", scene, function (meshes) {
+    BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", "board.obj", scene, function (meshes) {
         // Material for edges
         var edgeMaterial = new BABYLON.StandardMaterial("edgeMaterial", scene);
         edgeMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color
@@ -85,8 +85,17 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
 		    var pickInfo = scene.pick(scene.pointerX, scene.pointerY);
 		    var worldPosition = pickInfo.pickedPoint;
 
+		var objFiles = [
+		    "yuyoc1.obj",
+		    "yuyoc2.obj",
+		    "yuyoc3.obj"
+		];
+
+		    var randomIndex = Math.floor(Math.random() * objFiles.length);
+		    var selectedObjFile = objFiles[randomIndex];
+
                 // Load the yuyo2.obj file and position it at the picked mesh's position
-                BABYLON.SceneLoader.ImportMesh("", "./", "yuyo2.obj", scene, 
+                BABYLON.SceneLoader.ImportMesh("", "http://127.0.0.1:8080/", selectedObjFile, scene, 
                     function (importedMeshes) {
              importedMeshes.forEach(function (importedMesh) {
                         // Position the imported mesh at the picked mesh's position
@@ -95,6 +104,8 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
 
                         importedMesh.position.copyFrom(worldPosition);
 
+		     var randomRotationY = Math.random() * Math.PI * 2; // Random rotation around Y axis
+                        importedMesh.rotation.y = randomRotationY;
                         // Hide the imported mesh until it's positioned correctly
                         importedMesh.isVisible = true;
 			  var scaleFactor = Math.random() * 1 + 0.25; // Scale factor between 0.5 and 1.0
