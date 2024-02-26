@@ -1,5 +1,18 @@
 window.addEventListener('DOMContentLoaded', () => {
-	var audio = new Audio("./unspoken_verbs_1.m4a");
+    // Array de nombres de archivos de audio
+    var audioFiles = ["1.m4a", "2.m4a", "3.m4a", "4.m4a", "5.m4a"];
+    // Índice para rastrear qué archivo de audio se reproducirá a continuación
+    var audioIndex = 0;
+    // Función para cargar y reproducir el archivo de audio actual
+    function playNextAudio() {
+        var audio = new Audio("audios/" + audioFiles[audioIndex]);
+	console.log(audio);
+	console.log(audioIndex)
+        audio.play();
+        // Incrementar el índice para el próximo clic
+        audioIndex = (audioIndex + 1) % audioFiles.length;
+    }
+
     // Get the canvas element
     var canvas = document.getElementById("renderCanvas");
 
@@ -8,12 +21,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Create scene
     var scene = new BABYLON.Scene(engine);
-scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b, a)
+    scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b, a)
 
     // Add a camera to the scene
-   var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 7, BABYLON.Vector3.Zero(), scene);
-
-	camera.z=.1;
+    var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 7, BABYLON.Vector3.Zero(), scene);
+    camera.z = .1;
     camera.attachControl(canvas, true);
 
     // Add lights to the scene
@@ -57,51 +69,48 @@ scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.1, 1); // RGBA values (r, g, b
             mesh.isPickable = true;
         });
 
+        // Create glow layer
+        var glowLayer = new BABYLON.GlowLayer("glow", scene);
 
-// Create glow layer
-var glowLayer = new BABYLON.GlowLayer("glow", scene);
+        // Create light points as light sources
+        var lightPoints = [];
+        for (var i = 0; i < 10; i++) {
+            var lightPoint = new BABYLON.PointLight("lightPoint" + i, new BABYLON.Vector3(0, 0, 0), scene);
+            lightPoint.diffuse = new BABYLON.Color3(1, 1, 0); // Yellow light
+            lightPoint.specular = new BABYLON.Color3(1, 1, 1); // White specular highlight
+            lightPoints.push(lightPoint);
+        }
 
-// Create light points as light sources
-var lightPoints = [];
-for (var i = 0; i < 10; i++) {
-    var lightPoint = new BABYLON.PointLight("lightPoint" + i, new BABYLON.Vector3(0, 0, 0), scene);
-    lightPoint.diffuse = new BABYLON.Color3(1, 1, 0); // Yellow light
-    lightPoint.specular = new BABYLON.Color3(1, 1, 1); // White specular highlight
-    lightPoints.push(lightPoint);
-}
+        // Position light points
+        for (var i = 0; i < lightPoints.length; i++) {
+            lightPoints[i].position = new BABYLON.Vector3(Math.random() * 10 - 5, Math.random() * 3, Math.random() * 10 - 5);
 
-// Position light points
-for (var i = 0; i < lightPoints.length; i++) {
-    lightPoints[i].position = new BABYLON.Vector3(Math.random() * 10 - 5, Math.random() * 3, Math.random() * 10 - 5);
-    
-    // Add light point to glow layer
-    glowLayer.addIncludedOnlyMesh(lightPoints[i]);
-}
+            // Add light point to glow layer
+            glowLayer.addIncludedOnlyMesh(lightPoints[i]);
+        }
 
-// Create light point indicators
-var lightPointIndicators = [];
-for (var i = 0; i < lightPoints.length; i++) {
-    var lightPointIndicator = BABYLON.MeshBuilder.CreateSphere("lightPointIndicator" + i, { diameter: 0.2, segments: 16 }, scene);
-    lightPointIndicator.position = lightPoints[i].position;
-    lightPointIndicator.material = new BABYLON.StandardMaterial("lightPointIndicatorMat", scene);
-    lightPointIndicator.material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow
-    lightPointIndicator.material.specularColor = new BABYLON.Color3(0, 0, 0); // No specular highlight
-    lightPointIndicator.material.emissiveColor = new BABYLON.Color3(1, 1, 0); // Yellow emission
-    lightPointIndicator.material.alpha = 0.1; // Adjust transparency
-    lightPointIndicators.push(lightPointIndicator);
-}
-// Animation function to toggle light points visibility
-var animateLightPoints = function (lightPoints, interval) {
-    var isVisible = true;
-    setInterval(function () {
-        lightPoints.forEach(function (point) {
-            point.intensity = isVisible ? 1 : 0; // Turn light on or off
-        });
-        isVisible = !isVisible;
-    }, interval);
-};
-
-
+        // Create light point indicators
+        var lightPointIndicators = [];
+        for (var i = 0; i < lightPoints.length; i++) {
+            var lightPointIndicator = BABYLON.MeshBuilder.CreateSphere("lightPointIndicator" + i, { diameter: 0.2, segments: 16 }, scene);
+            lightPointIndicator.position = lightPoints[i].position;
+            lightPointIndicator.material = new BABYLON.StandardMaterial("lightPointIndicatorMat", scene);
+            lightPointIndicator.material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow
+            lightPointIndicator.material.specularColor = new BABYLON.Color3(0, 0, 0); // No specular highlight
+            lightPointIndicator.material.emissiveColor = new BABYLON.Color3(1, 1, 0); // Yellow emission
+            lightPointIndicator.material.alpha = 0.1; // Adjust transparency
+            lightPointIndicators.push(lightPointIndicator);
+        }
+        // Animation function to toggle light points visibility
+        var animateLightPoints = function (lightPoints, interval) {
+            var isVisible = true;
+            setInterval(function () {
+                lightPoints.forEach(function (point) {
+                    point.intensity = isVisible ? 1 : 0; // Turn light on or off
+                });
+                isVisible = !isVisible;
+            }, interval);
+        };
     });
 
     // Register a render loop to repeatedly render the scene
@@ -117,8 +126,8 @@ var animateLightPoints = function (lightPoints, interval) {
     // Listen for mouse click events on the canvas
     canvas.addEventListener("click", function (event) {
         // Perform a pick operation
-	    engine.stopRenderLoop();
-	renderingPaused = true;
+        engine.stopRenderLoop();
+        renderingPaused = true;
 
         var pickResult = scene.pick(scene.pointerX, scene.pointerY);
 
@@ -129,58 +138,46 @@ var animateLightPoints = function (lightPoints, interval) {
 
             // Create a new object at the position of the picked mesh
             if (pickedMesh) {
-		    var pickInfo = scene.pick(scene.pointerX, scene.pointerY);
-		    var worldPosition = pickInfo.pickedPoint;
+                var pickInfo = scene.pick(scene.pointerX, scene.pointerY);
+                var worldPosition = pickInfo.pickedPoint;
 
-		var objFiles = [
-		    "yuyoc1.obj",
-		    "yuyoc2.obj",
-		    "yuyoc3.obj"
-		];
+                var objFiles = [
+                    "yuyoc1.obj",
+                    "yuyoc2.obj",
+                    "yuyoc3.obj"
+                ];
 
-		    var randomIndex = Math.floor(Math.random() * objFiles.length);
-		    var selectedObjFile = objFiles[randomIndex];
+                var randomIndex = Math.floor(Math.random() * objFiles.length);
+                var selectedObjFile = objFiles[randomIndex];
 
                 // Load the yuyo2.obj file and position it at the picked mesh's position
-                BABYLON.SceneLoader.ImportMesh("", "./", selectedObjFile, scene, 
+                BABYLON.SceneLoader.ImportMesh("", "./", selectedObjFile, scene,
                     function (importedMeshes) {
-             importedMeshes.forEach(function (importedMesh) {
-                        // Position the imported mesh at the picked mesh's position
-                        importedMesh.isVisible = false;
-		                              importedMesh.scaling = new BABYLON.Vector3(0, 0, 0);
+                        importedMeshes.forEach(function (importedMesh) {
+                            // Position the imported mesh at the picked mesh's position
+                            importedMesh.isVisible = false;
+                            importedMesh.scaling = new BABYLON.Vector3(0, 0, 0);
 
-                        importedMesh.position.copyFrom(worldPosition);
+                            importedMesh.position.copyFrom(worldPosition);
 
-		     var randomRotationY = Math.random() * Math.PI * 2; // Random rotation around Y axis
-                        importedMesh.rotation.y = randomRotationY;
-                        // Hide the imported mesh until it's positioned correctly
-                        importedMesh.isVisible = true;
-			  var scaleFactor = Math.random() * 1 + 0.25; // Scale factor between 0.5 and 1.0
+                            var randomRotationY = Math.random() * Math.PI * 2; // Random rotation around Y axis
+                            importedMesh.rotation.y = randomRotationY;
+                            // Hide the imported mesh until it's positioned correctly
+                            importedMesh.isVisible = true;
+                            var scaleFactor = Math.random() * 1 + 0.25; // Scale factor between 0.5 and 1.0
 
-
-BABYLON.Animation.CreateAndStartAnimation("scaleAnim", importedMesh, "scaling", 30, 60,
-                            new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(scaleFactor, scaleFactor, scaleFactor),
-                            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-                    });
-
-			     // Resume rendering after meshes are positioned and scaled
-                    if (renderingPaused) {
-                        engine.runRenderLoop(function () {
-                            scene.render();
+                            BABYLON.Animation.CreateAndStartAnimation("scaleAnim", importedMesh, "scaling", 30, 60,
+                                new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(scaleFactor, scaleFactor, scaleFactor),
+                                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
                         });
-                        renderingPaused = false;
-                    }
-                        // Register a function to be called after the scene renders to show the mesh
-                        //scene.registerAfterRender(function () {
-                        //    // Show the imported mesh now that it's positioned correctly
-                        //    importedMesh.isVisible = true;
 
-                        //    // Unregister the function to prevent it from being called again
-                        //    scene.unregisterAfterRender(arguments.callee);
-                        //});
-
-
-
+                        // Resume rendering after meshes are positioned and scaled
+                        if (renderingPaused) {
+                            engine.runRenderLoop(function () {
+                                scene.render();
+                            });
+                            renderingPaused = false;
+                        }
                     },
                     function (event) {
                         // Progress callback: Handle loading progress here
@@ -191,23 +188,23 @@ BABYLON.Animation.CreateAndStartAnimation("scaleAnim", importedMesh, "scaling", 
                         console.error("Failed to load yuyo2.obj:", message);
                     }
                 );
-		    // Start playing audio
-                audio.play();
-		    // Hide text after audio finishes
-		                // Create text
+                // Start playing audio
+                playNextAudio();
+                // Hide text after audio finishes
+                // Create text
                 var textTexture = new BABYLON.DynamicTexture("TextTexture", { width: 512, height: 256 }, scene);
                 var textMaterial = new BABYLON.StandardMaterial("TextMaterial", scene);
                 textMaterial.diffuseTexture = textTexture;
                 textMaterial.diffuseTexture.hasAlpha = true; // Enable alpha channel
                 var textPlane = BABYLON.MeshBuilder.CreatePlane("TextPlane", { size: 2 }, scene);
-		var altitudes = [1.5,1,.8,2,1.8,.9]
-		var randomIndexA = Math.floor(Math.random() * objFiles.length);
-		var altitud = altitudes[randomIndexA];
+                var altitudes = [1.5, 1, .8, 2, 1.8, .9]
+                var randomIndexA = Math.floor(Math.random() * objFiles.length);
+                var altitud = altitudes[randomIndexA];
                 textPlane.position = worldPosition.add(new BABYLON.Vector3(0, altitud, 0)); // Offset to make text appear above the clicked position
-        	textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+                textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
                 textPlane.material = textMaterial;
-		textTexture.drawText("In the small beauty of the forest", null, null, "bold 36px Roboto", "white", "transparent", true);
+                textTexture.drawText("In the small beauty of the forest", null, null, "bold 36px Roboto", "white", "transparent", true);
 
             }
         }
