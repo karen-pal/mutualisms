@@ -1,11 +1,17 @@
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', () => { 
+    let root = "./"; //"http://127.0.0.1:8080/"
     // Array de nombres de archivos de audio
-    var audioFiles = ["1.m4a", "2.m4a", "3.m4a", "4.m4a", "5.m4a"];
+    var audioFiles = ["1.mp3", "2.mp3", "3.mp3", "4.mp3", "5.mp3"];
+    var audioFiles2 = ["1.wav", "2.wav", "3.wav", "4.wav", "5.wav"];
     // Índice para rastrear qué archivo de audio se reproducirá a continuación
     var audioIndex = 0;
     // Función para cargar y reproducir el archivo de audio actual
     function playNextAudio() {
-        var audio = new Audio("audios/" + audioFiles[audioIndex]);
+	if (audioIndex % 2 == 0) {
+        var audio = new Audio(root + "audios/" + audioFiles[audioIndex]);
+	} else {
+        var audio = new Audio(root + "audios/" + audioFiles2[audioIndex]);
+	}
 	console.log(audio);
 	console.log(audioIndex)
         audio.play();
@@ -34,7 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
     var pickedMesh = null;
 
     // Load .obj file using objFileLoader
-    BABYLON.SceneLoader.ImportMesh("", "./", "board.obj", scene, function (meshes) {
+    BABYLON.SceneLoader.ImportMesh("", root, "board.obj", scene, function (meshes) {
         // Material for edges
         var edgeMaterial = new BABYLON.StandardMaterial("edgeMaterial", scene);
         edgeMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color
@@ -151,7 +157,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 var selectedObjFile = objFiles[randomIndex];
 
                 // Load the yuyo2.obj file and position it at the picked mesh's position
-                BABYLON.SceneLoader.ImportMesh("", "./", selectedObjFile, scene,
+                BABYLON.SceneLoader.ImportMesh("", root , selectedObjFile, scene,
                     function (importedMeshes) {
                         importedMeshes.forEach(function (importedMesh) {
                             // Position the imported mesh at the picked mesh's position
