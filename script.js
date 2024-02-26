@@ -1,21 +1,36 @@
 window.addEventListener('DOMContentLoaded', () => { 
-    let root = "./"; //"http://127.0.0.1:8080/"
+    let root = "./" //"http://127.0.0.1:8080/"  
     // Array de nombres de archivos de audio
     var audioFiles = ["1.mp3", "2.mp3", "3.mp3", "4.mp3", "5.mp3"];
     var audioFiles2 = ["1.wav", "2.wav", "3.wav", "4.wav", "5.wav"];
+    var verses = ["In the small beauty of the forest\n the wild deer bedding down-\n that they are there!", " Their eyes\n Effortless, the soft lips\n nuzzle and the alien small teeth\n tear at the grass.","The roots of it\ndangle from their mouths\n scattering earth in the strange woods,\nThey who are there."," Their paths\n nibbled through the fields, the leaves that shade them\n hang in the distances\n of sun.", " The small nouns\ncrying faith\nin this in which the wild deer\n startle, and stare out."]
+	console.log("wtf",verses[0])
+    let verse;
     // Índice para rastrear qué archivo de audio se reproducirá a continuación
     var audioIndex = 0;
+    var sequence = true;
     // Función para cargar y reproducir el archivo de audio actual
     function playNextAudio() {
-	if (audioIndex % 2 == 0) {
-        var audio = new Audio(root + "audios/" + audioFiles[audioIndex]);
+	if (sequence) {
+		if (audioIndex % 2 == 0) {
+		var audio = new Audio(root + "audios/" + audioFiles[audioIndex]);
+		} else {
+		var audio = new Audio(root + "audios/" + audioFiles2[audioIndex]);
+		}
 	} else {
-        var audio = new Audio(root + "audios/" + audioFiles2[audioIndex]);
+		if (audioIndex % 2 == 0) {
+		var audio = new Audio(root + "audios/" + audioFiles2[audioIndex]);
+		} else {
+		var audio = new Audio(root + "audios/" + audioFiles[audioIndex]);
+		}
 	}
 	console.log(audio);
 	console.log(audioIndex)
         audio.play();
         // Incrementar el índice para el próximo clic
+	verse = verses[audioIndex];
+
+	if (audioIndex+1 == audioFiles.length){ sequence = !sequence}
         audioIndex = (audioIndex + 1) % audioFiles.length;
     }
 
@@ -82,8 +97,8 @@ window.addEventListener('DOMContentLoaded', () => {
         var lightPoints = [];
         for (var i = 0; i < 10; i++) {
             var lightPoint = new BABYLON.PointLight("lightPoint" + i, new BABYLON.Vector3(0, 0, 0), scene);
-            lightPoint.diffuse = new BABYLON.Color3(1, 1, 0); // Yellow light
-            lightPoint.specular = new BABYLON.Color3(1, 1, 1); // White specular highlight
+            lightPoint.diffuse = new BABYLON.Color3(.5, .5, .8); // Yellow light
+            lightPoint.specular = new BABYLON.Color3(.5, .5, .8); // White specular highlight
             lightPoints.push(lightPoint);
         }
 
@@ -101,9 +116,9 @@ window.addEventListener('DOMContentLoaded', () => {
             var lightPointIndicator = BABYLON.MeshBuilder.CreateSphere("lightPointIndicator" + i, { diameter: 0.2, segments: 16 }, scene);
             lightPointIndicator.position = lightPoints[i].position;
             lightPointIndicator.material = new BABYLON.StandardMaterial("lightPointIndicatorMat", scene);
-            lightPointIndicator.material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow
+            lightPointIndicator.material.diffuseColor = new BABYLON.Color3(.5, .5, .5); // Yellow
             lightPointIndicator.material.specularColor = new BABYLON.Color3(0, 0, 0); // No specular highlight
-            lightPointIndicator.material.emissiveColor = new BABYLON.Color3(1, 1, 0); // Yellow emission
+            lightPointIndicator.material.emissiveColor = new BABYLON.Color3(.5, .5, .5); // Yellow emission
             lightPointIndicator.material.alpha = 0.1; // Adjust transparency
             lightPointIndicators.push(lightPointIndicator);
         }
@@ -210,7 +225,75 @@ window.addEventListener('DOMContentLoaded', () => {
                 textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
                 textPlane.material = textMaterial;
-                textTexture.drawText("In the small beauty of the forest", null, null, "bold 36px Roboto", "white", "transparent", true);
+
+		    var textPlanes = [];
+
+		    // Recursive function to display text lines with fading effect
+function displayTextWithFade(lines, index) {
+    if (index >= lines.length) {
+        return; // Exit if all lines are displayed
+    }
+
+    var line = lines[index];
+
+    // Draw current line onto the texture
+    var textTexture = new BABYLON.DynamicTexture("TextTexture", { width: 512, height: 256 }, scene);
+    var textMaterial = new BABYLON.StandardMaterial("TextMaterial", scene);
+    textMaterial.diffuseTexture = textTexture;
+    textMaterial.diffuseTexture.hasAlpha = true; // Enable alpha channel
+    var textPlane = BABYLON.MeshBuilder.CreatePlane("TextPlane", { size: 2 }, scene);
+    var altitudes = [1.5, 1, .8, 2, 1.8, .9]
+    var randomIndexA = Math.floor(Math.random() * objFiles.length);
+    var altitud = altitudes[randomIndexA];
+    textPlane.position = worldPosition.add(new BABYLON.Vector3(0, altitud, 0)); // Offset to make text appear above the clicked position
+    textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    textPlane.material = textMaterial;
+    //textPlane.overlayColor =new BABYLON.Color3(1, 1, 1); // White color 
+    // Draw current line onto texture
+    textTexture.drawText(line, null, null, "bold 20px Roboto", "white", "transparent", true);
+// Set useAlphaFromDiffuseTexture to true
+	// //transparent
+textMaterial.useAlphaFromDiffuseTexture = true;
+
+// flash
+	//
+
+	    // Store the text plane in the array
+    textPlanes.push(textPlane);
+
+
+    // Fade out previous line
+    if (index > 0) {
+        var prevTextMaterial = textPlanes[index - 1].material;
+        prevTextMaterial.alpha = 1; // Make sure alpha is set to 1 initially
+        scene.registerBeforeRender(function() {
+            prevTextMaterial.alpha -= 0.01; // Adjust fade out speed as needed
+            if (prevTextMaterial.alpha <= 0) {
+                prevTextMaterial.alpha = 0;
+                scene.unregisterBeforeRender(arguments.callee); // Stop the fading animation
+            }
+        });
+    }
+
+    // Call the function recursively to display the next line
+    setTimeout(function() {
+        displayTextWithFade(lines, index + 1);
+    }, 2000); // Adjust delay between lines as needed (in milliseconds)
+}
+
+// Extract the verse from the array (if it's an array)
+var verseString = Array.isArray(verse) ? verse[0] : verse;
+
+// Split the verse into separate lines
+var lines = verseString.split(/\r?\n/);
+
+console.log(lines);
+
+// Start displaying text lines with fade effect
+displayTextWithFade(lines, 0);
+
+
+                //textTexture.drawText(verse, null, null, "bold 20px Roboto", "white", "transparent", true);
 
             }
         }
